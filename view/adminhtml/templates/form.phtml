@@ -1,0 +1,208 @@
+<?php 
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+$url = $storeManager->getStore()->getBaseUrl();
+
+?>
+<textarea name="formBuilder" id="formBuilder"></textarea>
+<script>
+  require(['jquery', 'sformBuilder', 'sformRender'], function($) {
+
+    $('body').trigger('processStart');
+    var fb = $('textarea').formBuilder({
+
+      // additional form action buttons- save, data, clear
+      actionButtons: [],
+
+      // enables/disables stage sorting
+      allowStageSort: true,
+
+      // append/prepend non-editable content to the form.
+      append: false,
+      prepend: false,
+
+      // control order
+      controlOrder: [
+        'button',
+        'checkbox-group',
+        'checkbox',
+        '<a href="https://www.jqueryscript.net/time-clock/">date</a>',
+        'file',
+        'header',
+        'hidden',
+        'number',
+        'radio-group',
+        'select',
+        'text',
+        'textarea',
+      ],
+
+      // or left
+      controlPosition: 'right',
+
+      // or 'xml'
+      dataType: 'json',
+
+      // default fields
+      defaultFields: [],
+
+      // save, data, clear
+      disabledActionButtons: ['clear'],
+
+      // disabled attributes
+      disabledAttrs: [],
+
+      // disabled buttons
+      disabledFieldButtons: {},
+
+      // disabled subtypes
+      disabledSubtypes: {},
+
+      // disabled fields
+      disableFields: [],
+
+      // disables html in field labels
+      disableHTMLLabels: false,
+
+      // removes the injected style
+      disableInjectedStyle: false,
+
+      // opens the edit panel on added field
+      editOnAdd: false,
+
+      // adds custom control configs
+      fields: [],
+
+      // warns user if before the remove a field from the stage
+      fieldRemoveWarn: false,
+
+      // DOM node or selector
+      fieldEditContainer: null,
+
+      // add groups of fields at a time
+      inputSets: [],
+
+      // custom notifications
+      notify: {
+        error: function() {
+          console.log("Yes")
+        },
+        success: function(e) {
+          console.log("Yes")
+        },
+        warning: function() {
+          console.log("Yes")
+        },
+      },
+
+      // prevent clearAll from remove default fields
+      persistDefaultFields: false,
+
+      // callbakcs
+      onAddField: (fieldData, fieldId) => fieldData,
+      onAddOption: () => null,
+      onClearAll: () => null,
+      onCloseFieldEdit: () => null,
+      onOpenFieldEdit: () => null,
+      onSave: (evt, formData) => {
+
+        var param = {
+          "data": formData
+        };
+       
+        var addFieldsControllerurl = "<?php echo $this->getUrl('form/index/savefields/')?>";
+        $.ajax({
+        url: addFieldsControllerurl,
+        type: 'POST',
+        dataType: 'json',
+        data: param,
+        showLoader: true,
+        complete: function(response) {
+            var dynamic_fields_data = response.responseJSON.message;
+            // console.log(dynamic_fields_data);
+        },
+        error(xhr,status,error){
+            console.log("error is: ");
+            console.log(error);
+        }
+
+      });
+
+
+
+      },
+      
+      // replaces an existing field by id.window.onload = function() {
+      replaceFields: [],
+
+      // user roles
+      roles: {
+        1: 'Administrator',
+      },
+
+      // smoothly scrolls to a field when its added to the stage
+      scrollToFieldOnAdd: true,
+
+      // shows action buttons
+      showActionButtons: true,
+
+      // sortable controls
+      sortableControls: false,
+
+      // sticky controls
+      stickyControls: {
+        enable: true,
+        offset: {
+          top: 5,
+          bottom: 'auto',
+          right: 'auto',
+        },
+      },
+
+      // defines new types to be used with field base types such as button and input
+      subtypes: {},
+
+      // defines a custom output for new or existing fields.
+      templates: {},
+
+      // defines custom attributes for field types
+      typeUserAttrs: {},
+
+      // disabled attributes for specific field types
+      typeUserDisabledAttrs: {},
+
+      // adds functionality to existing and custom attributes using onclone and onadd events. Events return JavaScript DOM elements.
+      typeUserEvents: {},
+
+    });
+
+    fb.promise.then(function(e) {
+        
+        var customurl = "<?php echo $this->getUrl('form/index/getfields/')?>";
+        // console.log(customurl);
+      
+        $.ajax({
+        showLoader: true,
+        url: customurl,
+        type: 'GET',
+        dataType: 'json',
+        data: {},
+        before: function(){
+          $('body').trigger('processStart');
+        },
+        complete: function(response) {
+            var dynamic_fields_data = response.responseJSON.data;
+            // console.log(dynamic_fields_data);
+            fb.actions.setData(dynamic_fields_data);
+        },
+        error(xhr,status,error){
+            console.log("error is: ");
+            console.log(error);
+        }
+
+      });
+      
+    });
+  });
+  
+</script>
